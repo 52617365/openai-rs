@@ -1,10 +1,11 @@
-use serde::{Deserialize, Serialize};
+use serde::{ser::SerializeSeq, Serialize, Serializer};
 use std::io::{self, BufRead};
+
 const API_URL: &str = "https://api.openai.com/v1/chat/completions/";
 const MODEL: &str = "gpt-3.5-turbo";
 const REGULAR_LINE_BREAK: &str = "\r\n";
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 pub enum Role {
     #[serde(rename = "system")]
     System(String),
@@ -59,9 +60,30 @@ fn categorize_question(question: &str) -> Role {
         return Role::User(question_copy);
     }
 }
+#[derive(Serialize)]
+struct Payload<'a> {
+    model: &'static str,
+    #[serde(serialize_with = "serialize_vec_ref")] // Used to avoid copying the vec.
+    #[serde(rename = "messages")]
+    json_questions: &'a Vec<Role>,
+}
+fn serialize_vec_ref<S>(vec: &&Vec<Role>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut seq = serializer.serialize_seq(Some(vec.len()))?;
+    for elem in *vec {
+        seq.serialize_element(elem)?;
+    }
+    seq.end()
+}
+pub fn send_request_to_api(questions: &Vec<Role>) -> String {
+    let payload = Payload {
+        model: MODEL,
+        json_questions: questions,
+    };
 
-pub fn construct_payload(questions: &Vec<Role>) -> String {
-    let serialized_vector = serde_json::to_string(&questions).unwrap();
+    let serialized_payload = serde_json::to_string(&payload).unwrap();
 
-    return serialized_vector;
+    return serialized_payload;
 }

@@ -4,7 +4,7 @@ const API_URL: &str = "https://api.openai.com/v1/chat/completions";
 const MODEL: &str = "gpt-3.5-turbo";
 const REGULAR_LINE_BREAK: &str = "\r\n";
 
-enum Role {
+pub enum Role {
     System(String),
     User(String),
     Assistant(String),
@@ -35,13 +35,22 @@ pub fn ask_user_for_questions() -> Vec<Role> {
 }
 
 fn categorize_question(question: &str) -> Role {
-    let question_copy = question.trim().to_string().clone();
+    let create_copy = |ref_string: &str| return ref_string.trim().to_string();
 
-    if question_copy.starts_with("s_") {
-        return Role::System(question_copy);
+    let remove_prefix = |og_string: &str| {
+        let (_, trimmed_string) = og_string.split_at(2);
+        return trimmed_string.to_string();
+    };
+    if question.starts_with("s_") {
+        let question_copy = create_copy(question);
+        let remove_prefix = remove_prefix(&question_copy);
+        return Role::System(remove_prefix.to_string());
     } else if (*question).starts_with("a_") {
-        return Role::Assistant(question_copy);
+        let question_copy = create_copy(question);
+        let remove_prefix = remove_prefix(&question_copy);
+        return Role::Assistant(remove_prefix.to_string());
     } else {
+        let question_copy = create_copy(question);
         return Role::User(question_copy);
     }
 }

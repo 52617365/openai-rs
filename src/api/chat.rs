@@ -67,6 +67,8 @@ struct Payload<'a> {
     #[serde(rename = "messages")]
     json_questions: &'a Vec<Role>,
 }
+
+// This is a customer serializer that allows a vec to be serialized as a reference.
 fn serialize_vec_ref<S>(vec: &&Vec<Role>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -77,6 +79,7 @@ where
     }
     seq.end()
 }
+
 pub fn send_request_to_api(questions: &Vec<Role>) -> String {
     let payload = Payload {
         model: MODEL,

@@ -1,6 +1,7 @@
-use serde::{ser::SerializeSeq, Serialize, Serializer};
+use crate::api::{chat, chat_res::ChatCompletion};
+use reqwest::blocking::Client;
+use serde::{ser::SerializeSeq, Deserialize, Serialize, Serializer};
 use std::io::{self, BufRead};
-
 const API_URL: &str = "https://api.openai.com/v1/chat/completions/";
 const MODEL: &str = "gpt-3.5-turbo";
 const REGULAR_LINE_BREAK: &str = "\r\n";
@@ -68,7 +69,7 @@ struct Payload<'a> {
     json_questions: &'a Vec<Role>,
 }
 
-// This is a customer serializer that allows a vec to be serialized as a reference.
+// This is a customer serializer that allows a vec to be serialized without copying the contents.
 fn serialize_vec_ref<S>(vec: &&Vec<Role>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -80,13 +81,21 @@ where
     seq.end()
 }
 
-pub fn send_request_to_api(questions: &Vec<Role>) -> String {
+pub fn send_request_to_api(
+    questions: &Vec<Role>,
+) -> Result<ChatCompletion, Box<dyn std::error::Error>> {
+    let client = Client::new();
+
     let payload = Payload {
         model: MODEL,
         json_questions: questions,
     };
 
-    let serialized_payload = serde_json::to_string(&payload).unwrap();
+    // let serialized_payload = serde_json::to_string(&payload).unwrap();
 
-    return serialized_payload;
+    println!("Sending request then parsing response.");
+    let response = client.post(API_URL).json(&payload).send()?;
+    let chat_completion: ChatCompletion = response.json()?;
+
+    return Ok(chat_completion);
 }

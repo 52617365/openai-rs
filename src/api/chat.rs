@@ -117,8 +117,10 @@ pub fn send_request_to_api(
         .post(API_URL)
         .body(serialized)
         .header("Authorization", api_key)
+        .header("Content-Type", "application/json")
         .send()?;
 
+    println!("{:?}", response);
     if response.status().is_success() {
         return match response.json() {
             Ok(res) => Ok(res),

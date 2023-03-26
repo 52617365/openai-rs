@@ -17,7 +17,7 @@ enum Role {
     Assistant,
 }
 
-// Just a struct wrapper for the PossibleRoles so we can get the correct payload which looks like:
+// This struct will be serialized into the following correct format.
 // "messages": [{"role": "user", "content": "Hello!"}]
 #[derive(Serialize)]
 pub struct Message {

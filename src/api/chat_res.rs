@@ -2,18 +2,18 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ChatCompletion {
-    id: String,
-    object: String,
-    created: i64,
-    choices: Vec<Choice>,
-    usage: Usage,
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub choices: Vec<Choice>,
+    pub usage: Usage,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Choice {
-    index: i64,
-    message: Message,
-    finish_reason: String,
+pub struct Choice {
+    pub index: i64,
+    pub message: Message,
+    pub finish_reason: String,
 }
 
 // This struct will be serialized into the following correct format.
@@ -21,13 +21,13 @@ struct Choice {
 // It's how ever also included in the response.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Message {
-    role: String,
-    content: String,
+    pub role: String,
+    pub content: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Usage {
-    prompt_tokens: i64,
-    completion_tokens: i64,
-    total_tokens: i64,
+pub struct Usage {
+    pub prompt_tokens: i64,
+    pub completion_tokens: i64,
+    pub total_tokens: i64,
 }

@@ -111,7 +111,6 @@ pub fn send_request_to_api(
 
     let serialized = serde_json::to_string(&payload).unwrap();
 
-    println!("{}", serialized);
     println!("Sending request then parsing response.");
     let response = client
         .post(API_URL)
@@ -120,7 +119,6 @@ pub fn send_request_to_api(
         .header("Content-Type", "application/json")
         .send()?;
 
-    println!("{:?}", response);
     if response.status().is_success() {
         return match response.json() {
             Ok(res) => Ok(res),

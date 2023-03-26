@@ -1,3 +1,4 @@
+use crate::api::chat_req;
 use crate::api::chat_res::ChatCompletion;
 use reqwest::blocking::Client;
 use serde::{ser::SerializeSeq, Serialize, Serializer};
@@ -8,24 +9,7 @@ const API_URL: &str = "https://api.openai.com/v1/chat/completions";
 const MODEL: &str = "gpt-3.5-turbo";
 const REGULAR_LINE_BREAK: &str = "\r\n";
 
-// The ChatGPT supports three different question types, system, user and assistant.
-#[derive(Serialize)]
-#[serde(rename_all = "kebab-case")]
-enum Role {
-    System,
-    User,
-    Assistant,
-}
-
-// This struct will be serialized into the following correct format.
-// "messages": [{"role": "user", "content": "Hello!"}]
-#[derive(Serialize)]
-pub struct Message {
-    role: Role,
-    content: String,
-}
-
-pub fn ask_user_for_questions() -> Vec<Message> {
+pub fn ask_user_for_questions() -> Vec<chat_req::Message> {
     print_instructions();
 
     let stdin = io::stdin();
@@ -57,7 +41,7 @@ fn print_instructions() {
 // We categorize the question into a struct that holds the question type and the question itself.
 // Question type can be one of the following: system, assisant, user(default).
 // We then add the results into a Message struct for serialization purposes.
-fn categorize_question(question: &str) -> Message {
+fn categorize_question(question: &str) -> chat_req::Message {
     let create_copy = |ref_string: &str| return ref_string.trim().to_string();
 
     let remove_prefix = |ref_string: &str| {
@@ -73,20 +57,20 @@ fn categorize_question(question: &str) -> Message {
 
     if question.starts_with("s_") {
         let msg = copy_and_remove_prefix(question);
-        return Message {
-            role: Role::System,
+        return chat_req::Message {
+            role: chat_req::Role::System,
             content: msg,
         };
     } else if (*question).starts_with("a_") {
         let msg = copy_and_remove_prefix(question);
-        return Message {
-            role: Role::Assistant,
+        return chat_req::Message {
+            role: chat_req::Role::Assistant,
             content: msg,
         };
     } else {
         let question_copy = create_copy(question);
-        return Message {
-            role: Role::User,
+        return chat_req::Message {
+            role: chat_req::Role::User,
             content: question_copy,
         };
     }
@@ -95,11 +79,11 @@ fn categorize_question(question: &str) -> Message {
 struct Payload<'a> {
     model: &'static str,
     #[serde(serialize_with = "serialize_vec_ref")]
-    messages: &'a Vec<Message>,
+    messages: &'a Vec<chat_req::Message>,
 }
 
 // This is a customer serializer that allows a Vec to be serialized without performing an expensive copy.
-fn serialize_vec_ref<S>(vec: &&Vec<Message>, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_vec_ref<S>(vec: &&Vec<chat_req::Message>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -111,7 +95,7 @@ where
 }
 
 pub fn send_request_to_api(
-    questions: &Vec<Message>,
+    questions: &Vec<chat_req::Message>,
 ) -> Result<ChatCompletion, Box<dyn std::error::Error>> {
     let api_key = format!(
         "Bearer {}",

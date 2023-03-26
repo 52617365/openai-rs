@@ -16,8 +16,11 @@ struct Choice {
     finish_reason: String,
 }
 
+// This struct will be serialized into the following correct format.
+// "messages": [{"role": "user", "content": "Hello!"}]
+// It's how ever also included in the response.
 #[derive(Debug, Deserialize, Serialize)]
-struct Message {
+pub struct Message {
     role: String,
     content: String,
 }

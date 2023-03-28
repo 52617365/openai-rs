@@ -11,7 +11,6 @@ const REGULAR_LINE_BREAK: &str = "\r\n";
 
 pub fn ask_user_for_questions() -> Vec<chat_req::Message> {
     print_instructions();
-
     let stdin = io::stdin();
     let mut questions = vec![];
 
@@ -31,11 +30,28 @@ pub fn ask_user_for_questions() -> Vec<chat_req::Message> {
     return questions;
 }
 
+pub fn set_api_token() -> () {
+    match env::var("CHATGPT_API_KEY") {
+        Ok(_) => (),
+        Err(_) => {
+            println!("CHATGPT_API_KEY env variable is empty, input your API key.");
+
+            let mut api_token = String::new();
+
+            io::stdin()
+                .read_line(&mut api_token)
+                .expect("Failed to read API token");
+
+            env::set_var("CHATGPT_API_KEY", api_token);
+        }
+    }
+}
+
 fn print_instructions() {
+    println!("================================");
     println!("Prefixes: s_{{question}}, a_{{question}}, default is set to user question.");
-    println!("s_ stands for system, a_  for assistant respectively.");
-    println!("--------------------------------");
-    println!("Enter questions. Press enter with no text to go forward.");
+    println!("Press enter with no text to go forward.");
+    println!("================================");
 }
 
 // We categorize the question into a struct that holds the question type and the question itself.

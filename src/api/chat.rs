@@ -12,7 +12,7 @@ const REGULAR_LINE_BREAK: &str = "\r\n";
 pub fn ask_user_for_questions() -> Vec<chat_req::Message> {
     print_instructions();
     let stdin = io::stdin();
-    let mut questions = vec![];
+    let mut categorized_questions = vec![];
 
     loop {
         let mut question = String::new();
@@ -23,26 +23,18 @@ pub fn ask_user_for_questions() -> Vec<chat_req::Message> {
         } else {
             let categorized_question = categorize_question(&question);
 
-            questions.push(categorized_question);
+            categorized_questions.push(categorized_question);
         }
     }
 
-    return questions;
+    return categorized_questions;
 }
 
-pub fn set_api_token() -> () {
+pub fn ensure_api_token() -> () {
     match env::var("CHATGPT_API_KEY") {
         Ok(_) => (),
         Err(_) => {
-            println!("CHATGPT_API_KEY env variable is empty, input your API key.");
-
-            let mut api_token = String::new();
-
-            io::stdin()
-                .read_line(&mut api_token)
-                .expect("Failed to read API token");
-
-            env::set_var("CHATGPT_API_KEY", api_token);
+            panic!("CHATGPT_API_KEY env variable is empty");
         }
     }
 }
@@ -77,7 +69,7 @@ fn categorize_question(question: &str) -> chat_req::Message {
             role: chat_req::Role::System,
             content: msg,
         };
-    } else if (*question).starts_with("a_") {
+    } else if question.starts_with("a_") {
         let msg = copy_and_remove_prefix(question);
         return chat_req::Message {
             role: chat_req::Role::Assistant,
@@ -127,7 +119,6 @@ pub fn send_request_to_api(
 
     let serialized = serde_json::to_string(&payload).unwrap();
 
-    println!("Sending request then parsing response.");
     let response = client
         .post(API_URL)
         .body(serialized)

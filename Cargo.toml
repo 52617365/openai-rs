@@ -8,9 +8,15 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 
-# serde_json is just for the example, not required in general
+# Serde_json is just for the example, not required in general
 serde_json = "1.0"
 
-# for requests + async
+# For requests + async
 reqwest = {version = "0.11", features = ["blocking", "json"]}
 tokio = { version = "1", features = ["full"] }
+
+# To render markdown in the terminal
+termimad = "0.20"
+
+# To get nice coloring in the command line.
+colored =  "2.0.0"
